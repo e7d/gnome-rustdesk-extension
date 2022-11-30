@@ -1,0 +1,15 @@
+.rustdesk-icon {
+  background-image: url("assets/icon.png");
+  background-position: center;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+}
+
+.rustdesk-icon.online {
+  background-image: url("assets/icon-online.png");
+}
+
+.rustdesk-icon.offline {
+  background-image: url("assets/icon-offline.png");
+}

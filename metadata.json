@@ -1,0 +1,10 @@
+{
+  "name": "RustDesk",
+  "description": "This extension puts an icon in the panel to interact with RustDesk.",
+  "uuid": "gnome-rustdesk-extension@e7d.io",
+  "shell-version": [
+    "43"
+  ],
+  "url": "https://github.com/e7d/gnome-rustdesk-extension",
+  "version": 0.1
+}
