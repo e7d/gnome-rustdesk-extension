@@ -41,6 +41,44 @@ function addSetupButton(group) {
   row.add_suffix(button);
 }
 
+function addSessionsSwitch(settings, group) {
+  const row = new Adw.ActionRow({ title: 'Manage opened sessions' });
+  group.add(row);
+
+  const toggle = new Gtk.Switch({
+    active: settings.get_boolean('sessions'),
+    valign: Gtk.Align.CENTER,
+  });
+  settings.bind(
+    'sessions',
+    toggle,
+    'active',
+    Gio.SettingsBindFlags.DEFAULT
+  );
+
+  row.add_suffix(toggle);
+  // row.activatable_widget = toggle;
+}
+
+function addServiceSwitch(settings, group) {
+  const row = new Adw.ActionRow({ title: 'Manage RustDesk service' });
+  group.add(row);
+
+  const toggle = new Gtk.Switch({
+    active: settings.get_boolean('service'),
+    valign: Gtk.Align.CENTER,
+  });
+  settings.bind(
+    'service',
+    toggle,
+    'active',
+    Gio.SettingsBindFlags.DEFAULT
+  );
+
+  row.add_suffix(toggle);
+  // row.activatable_widget = toggle;
+}
+
 function addAlwaysShowSwitch(settings, group) {
   const row = new Adw.ActionRow({ title: 'Always show icon' });
   group.add(row);
@@ -69,6 +107,8 @@ function fillPreferencesWindow(window) {
 
   // addSetupButton(group);
   addAlwaysShowSwitch(settings, group);
+  addSessionsSwitch(settings, group);
+  addServiceSwitch(settings, group);
 
   window.add(page);
 }
