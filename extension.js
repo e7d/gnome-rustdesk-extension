@@ -16,10 +16,12 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+'use strict';
 
 const ByteArray = imports.byteArray;
-const { Clutter, GLib, GObject, St } = imports.gi;
+const { Clutter, Gio, GLib, GObject, St } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
@@ -147,8 +149,14 @@ const Indicator = GObject.registerClass(
     _init(rustDeskService) {
       super._init(0.0, gettext('RustDesk'));
       this.rustDeskService = rustDeskService;
-      this.updateIcon();
-      this.updateMenu();
+      this.update();
+    }
+
+    updateVisible() {
+      const settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.gnome-rustdesk-extension');
+      this.visible = settings.get_boolean('always-show')
+        || this.rustDeskService.main
+        || Object.keys(this.rustDeskService.sessions).length > 0;
     }
 
     updateIcon() {
@@ -230,6 +238,13 @@ const Indicator = GObject.registerClass(
       });
       this.menu.addMenuItem(exitItem);
     }
+
+    update() {
+      this.updateVisible();
+      if (!this.visible) return;
+      this.updateIcon();
+      if (this.rustDeskService.changes) this.updateMenu();
+    }
   }
 );
 
@@ -248,7 +263,9 @@ class RustDeskService {
     }, session);
   }
 
-  set(data) {
+  update() {
+    const data = parseProcesses();
+
     const previousService = JSON.parse(JSON.stringify(this.service));
     const serviceStarted = !previousService && data.service;
     const serviceStopped = previousService && !data.service;
@@ -293,32 +310,22 @@ class Extension {
   }
 
   enable() {
+    log(`enabling ${Me.metadata.name}`);
+    this.indicator = new Indicator(this.rustDeskService);
+    Main.panel.addToStatusArea(this.uuid, this.indicator);
     this.refreshInterval = setInterval(this.refresh.bind(this), 1000);
   }
 
   disable() {
+    log(`disabling ${Me.metadata.name}`);
     clearInterval(this.refreshInterval);
-  }
-
-  addIndicator() {
-    this.indicator = new Indicator(this.rustDeskService);
-    Main.panel.addToStatusArea(this.uuid, this.indicator);
-  }
-
-  removeIndicator() {
     this.indicator.destroy();
     this.indicator = null;
   }
 
   refresh() {
-    this.rustDeskService.set(parseProcesses());
-    const sessionCount = Object.keys(this.rustDeskService.sessions).length;
-    if (this.indicator && !this.rustDeskService.main && sessionCount === 0) this.removeIndicator();
-    if (!this.indicator && (this.rustDeskService.main || sessionCount > 0)) this.addIndicator();
-    if (this.indicator) {
-      this.indicator.updateIcon();
-      if (this.rustDeskService.changes) this.indicator.updateMenu();
-    }
+    this.rustDeskService.update();
+    this.indicator.update();
   }
 }
 
