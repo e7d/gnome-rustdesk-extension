@@ -28,6 +28,7 @@ const { XDO } = Me.imports.xdo;
 
 const RUSTDESK_SERVICE_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk --service$/;
 const RUSTDESK_MAIN_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk$/;
+const RUSTDESK_CONNECTION_MANAGER_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk --cm$/;
 const RUSTDESK_SESSION_CONNECT_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk --connect (?<sessionID>\d+)$/;
 const RUSTDESK_SESSION_FILE_TRANSFER_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk --file-transfer (?<sessionID>\d+)$/;
 const RUSTDESK_SESSION_PORT_FORWARD_PID_REGEXP = /^\w+ +(?<PID>\d+).*rustdesk --port-forward (?<sessionID>\d+)$/;
@@ -36,7 +37,10 @@ var RustDesk = class RustDesk {
   constructor() {
     this.service = null;
     this.main = null;
+    this.connectionManager = null;
     this.sessions = {};
+
+    this.pendingChanges = false;
   }
 
   parseServiceProcessLine(processes, line) {
@@ -54,6 +58,16 @@ var RustDesk = class RustDesk {
     const windowID = PID && XDO.findWindowID(PID);
     const windowState = windowID && XDO.getWindowState(windowID);
     processes.main = { PID, windowID, windowState };
+    return processes;
+  }
+
+  parseConnectionManagerProcessLine(processes, line) {
+    const connectionManagerMatches = RUSTDESK_CONNECTION_MANAGER_PID_REGEXP.exec(line);
+    if (!connectionManagerMatches) return processes;
+    const { PID } = connectionManagerMatches.groups;
+    const windowID = PID && XDO.findWindowID(PID);
+    const windowState = windowID && XDO.getWindowState(windowID);
+    processes.connectionManager = { PID, windowID, windowState };
     return processes;
   }
 
@@ -86,38 +100,46 @@ var RustDesk = class RustDesk {
     return stdout.split('\n').reduce((processes, line) => {
       processes = this.parseServiceProcessLine(processes, line);
       processes = this.parseMainProcessLine(processes, line);
+      processes = this.parseConnectionManagerProcessLine(processes, line);
       processes = this.parseSessionProcessLine(processes, 'connect', RUSTDESK_SESSION_CONNECT_PID_REGEXP, line);
       processes = this.parseSessionProcessLine(processes, 'fileTransfer', RUSTDESK_SESSION_FILE_TRANSFER_PID_REGEXP, line);
       processes = this.parseSessionProcessLine(processes, 'portForward', RUSTDESK_SESSION_PORT_FORWARD_PID_REGEXP, line);
       return processes;
-    }, { service: null, main: null, sessions: {} });
+    }, { service: null, main: null, connectionManager: null, sessions: {} });
   }
 
   startApp() {
+    log(`Starting RustDesk application`);
     GLib.spawn_command_line_async('rustdesk');
   }
 
   exitApp(PID) {
+    log(`Quitting RustDesk application`);
     GLib.spawn_command_line_async(`kill -SIGQUIT ${PID}`);
   }
 
   startService() {
+    log(`Starting RustDesk service`);
     GLib.spawn_command_line_async('systemctl start rustdesk');
   }
 
   stopService() {
+    log(`Stopping RustDesk service`);
     GLib.spawn_command_line_async('systemctl stop rustdesk');
   }
 
   restartService() {
+    log(`Restarting RustDesk service`);
     GLib.spawn_command_line_async('systemctl restart rustdesk');
   }
 
   startSession(action, sessionID) {
+    log(`Starting "${action}" RustDesk service to ${sessionID}`);
     GLib.spawn_command_line_async(`rustdesk --${action} ${sessionID}`);
   }
 
   activateWindow(windowID) {
+    log(`Activating window ${windowID}`);
     GLib.spawn_command_line_async(`xdotool windowactivate ${windowID}`);
   }
 
@@ -142,6 +164,11 @@ var RustDesk = class RustDesk {
     const mainClosed = previousMain && !rustdesk.main;
     this.main = rustdesk.main;
 
+    const previousConnectionManager = JSON.parse(JSON.stringify(this.connectionManager));
+    const connectionManagerStarted = !previousConnectionManager && rustdesk.connectionManager;
+    const connectionManagerClosed = previousConnectionManager && !rustdesk.connectionManager;
+    this.connectionManager = rustdesk.connectionManager;
+
     const previousSessions = JSON.parse(JSON.stringify(this.sessions));
     Object.keys(previousSessions).forEach(sessionID => {
       const previousSession = previousSessions[sessionID];
@@ -164,6 +191,12 @@ var RustDesk = class RustDesk {
     }, previousSessions);
     this.sessions = sessions;
 
-    this.pendingChanges = serviceStarted || serviceStopped || mainStarted || mainClosed || Object.values(sessions).filter(s => s.added || s.deleted || s.changed).length > 0;
+    this.pendingChanges = serviceStarted
+      || serviceStopped
+      || mainStarted
+      || mainClosed
+      || connectionManagerStarted
+      || connectionManagerClosed
+      || Object.values(sessions).filter(s => s.added || s.deleted || s.changed).length > 0;
   }
 }

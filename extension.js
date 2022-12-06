@@ -28,30 +28,33 @@ const PopupMenu = imports.ui.popupMenu;
 const Me = ExtensionUtils.getCurrentExtension();
 const { gettext } = ExtensionUtils;
 
+const { Settings } = Me.imports.settings;
 const { RustDesk } = Me.imports.rustdesk;
 
 const GETTEXT_DOMAIN = 'gnome-rustdesk-extension@e7d.io';
 
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
-    _init(rustdesk) {
+    _init(settings, rustdesk) {
       super._init(0.0, gettext('RustDesk'));
+      this.settings = settings;
       this.rustdesk = rustdesk;
       this.update();
     }
 
     updateVisible() {
       const settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.gnome-rustdesk-extension');
-      this.visible = settings.get_boolean('always-show')
+      this.visible = settings.get_int('show-icon') === 0
         || this.rustdesk.main
         || Object.keys(this.rustdesk.sessions).length > 0;
     }
 
     updateIcon() {
       const offline = !this.rustdesk.service;
+      const cm = this.rustdesk.connectionManager;
       const online = Object.values(this.rustdesk.sessions).filter(s => !s.deleted).length > 0;
       this.destroy_all_children();
-      this.icon = new St.Icon({ style_class: `rustdesk-icon${online ? ' online' : ''}${offline ? ' offline' : ''}` });
+      this.icon = new St.Icon({ style_class: `rustdesk-icon${online ? ' online' : ''}${cm ? ' cm' : ''}${offline ? ' offline' : ''}` });
       this.add_child(this.icon);
     }
 
@@ -60,13 +63,10 @@ const Indicator = GObject.registerClass(
     }
 
     updateMenu() {
-      const service = this.rustdesk.service;
-      const main = this.rustdesk.main;
+      const { service, main } = this.rustdesk;
       const sessions = Object.values(this.rustdesk.sessions).filter(s => !s.deleted);
 
-      const settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.gnome-rustdesk-extension');
-      const manageSessions = settings.get_boolean('sessions')
-      const manageservice = settings.get_boolean('service')
+      const { service: serviceSetting, sessions: sessionsSetting } = this.settings;
 
       this.menu.removeAll();
 
@@ -74,7 +74,7 @@ const Indicator = GObject.registerClass(
       mainItem.connect('activate', () => main ? this.rustdesk.activateWindow(main.windowID) : this.rustdesk.startApp());
       this.menu.addMenuItem(mainItem);
 
-      if (manageSessions && sessions.length > 0) {
+      if (sessionsSetting && sessions.length > 0) {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         sessions.forEach(({ sessionID, connect, fileTransfer, portForward }) => {
           const sessionSubMenu = new PopupMenu.PopupSubMenuMenuItem(this.toSessionLabel(sessionID));
@@ -109,7 +109,7 @@ const Indicator = GObject.registerClass(
         }
       }
 
-      if (manageservice) {
+      if (serviceSetting) {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         const serviceItem = new PopupMenu.PopupMenuItem(service ? gettext('Stop service') : gettext('Start service'));
@@ -135,8 +135,8 @@ const Indicator = GObject.registerClass(
     }
 
     update() {
+      if (!this.settings.pendingChanges && !this.rustdesk.pendingChanges) return;
       this.updateVisible();
-      if (!this.visible || !this.rustdesk.pendingChanges) return;
       this.updateIcon();
       this.updateMenu();
     }
@@ -149,12 +149,13 @@ class Extension {
   constructor(uuid) {
     this.uuid = uuid;
     ExtensionUtils.initTranslations(GETTEXT_DOMAIN);
+    this.settings = new Settings();
     this.rustdesk = new RustDesk();
   }
 
   enable() {
     log(`enabling ${Me.metadata.name}`);
-    this.indicator = new Indicator(this.rustdesk);
+    this.indicator = new Indicator(this.settings, this.rustdesk);
     Main.panel.addToStatusArea(this.uuid, this.indicator);
     this.refreshInterval = setInterval(this.refresh.bind(this), 1000);
   }
@@ -167,6 +168,7 @@ class Extension {
   }
 
   refresh() {
+    this.settings.update();
     this.rustdesk.update();
     this.indicator.update();
   }

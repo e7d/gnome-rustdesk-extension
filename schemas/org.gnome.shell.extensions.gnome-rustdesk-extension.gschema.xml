@@ -2,8 +2,8 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.gnome-rustdesk-extension" path="/org/gnome/shell/extensions/gnome-rustdesk-extension/">
     <!-- See also: https://docs.gtk.org/glib/gvariant-format-strings.html -->
-    <key name="always-show" type="b">
-      <default>true</default>
+    <key name="show-icon" type="i">
+      <default>1</default>
     </key>
     <key name="sessions" type="b">
       <default>true</default>

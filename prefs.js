@@ -18,7 +18,7 @@
 
 'use strict';
 
-const { Adw, Gio, GLib, Gtk } = imports.gi;
+const { Adw, Gio, GLib, GObject, Gtk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -35,14 +35,46 @@ function addSetupButton(group) {
     valign: Gtk.Align.CENTER,
   });
   button.connect('clicked', () => {
-    // GLib.spawn_command_line_async(`dnf install xdotool`);
+    GLib.spawn_command_line_async(`dnf install xdotool`);
   });
 
   row.add_suffix(button);
 }
 
+function addShowIconComboBox(settings, group) {
+  const row = new Adw.ActionRow({ title: 'Display icon' });
+  group.add(row);
+
+  let model = new Gtk.ListStore();
+  model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
+
+  let cbox = new Gtk.ComboBox({
+    model: model,
+    active: settings.get_int('show-icon'),
+    valign: Gtk.Align.CENTER,
+  });
+  let renderer = new Gtk.CellRendererText();
+  cbox.pack_start(renderer, true);
+  cbox.add_attribute(renderer, 'text', 1);
+
+  model.set(model.append(), [0, 1], ['always', 'Always']);
+  model.set(model.append(), [0, 1], ['when-running', 'When RustDesk is running']);
+
+  settings.bind(
+    'show-icon',
+    cbox,
+    'active',
+    Gio.SettingsBindFlags.DEFAULT
+  );
+
+  row.add_suffix(cbox);
+}
+
 function addSessionsSwitch(settings, group) {
-  const row = new Adw.ActionRow({ title: 'Manage opened sessions' });
+  const row = new Adw.ActionRow({
+    title: 'Manage sessions',
+    subtitle: 'Display an entry to manage each currently opened session.'
+  });
   group.add(row);
 
   const toggle = new Gtk.Switch({
@@ -57,11 +89,14 @@ function addSessionsSwitch(settings, group) {
   );
 
   row.add_suffix(toggle);
-  // row.activatable_widget = toggle;
+  row.activatable_widget = toggle;
 }
 
 function addServiceSwitch(settings, group) {
-  const row = new Adw.ActionRow({ title: 'Manage RustDesk service' });
+  const row = new Adw.ActionRow({
+    title: 'Manage service',
+    subtitle: 'Display additional entries to start and stop the RustDesk service.'
+    });
   group.add(row);
 
   const toggle = new Gtk.Switch({
@@ -76,26 +111,7 @@ function addServiceSwitch(settings, group) {
   );
 
   row.add_suffix(toggle);
-  // row.activatable_widget = toggle;
-}
-
-function addAlwaysShowSwitch(settings, group) {
-  const row = new Adw.ActionRow({ title: 'Always show icon' });
-  group.add(row);
-
-  const toggle = new Gtk.Switch({
-    active: settings.get_boolean('always-show'),
-    valign: Gtk.Align.CENTER,
-  });
-  settings.bind(
-    'always-show',
-    toggle,
-    'active',
-    Gio.SettingsBindFlags.DEFAULT
-  );
-
-  row.add_suffix(toggle);
-  // row.activatable_widget = toggle;
+  row.activatable_widget = toggle;
 }
 
 function fillPreferencesWindow(window) {
@@ -106,7 +122,7 @@ function fillPreferencesWindow(window) {
   page.add(group);
 
   // addSetupButton(group);
-  addAlwaysShowSwitch(settings, group);
+  addShowIconComboBox(settings, group);
   addSessionsSwitch(settings, group);
   addServiceSwitch(settings, group);
 

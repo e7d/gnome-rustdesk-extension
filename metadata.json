@@ -1,7 +1,7 @@
 {
   "uuid": "gnome-rustdesk-extension@e7d.io",
   "name": "RustDesk",
-  "description": "This extension puts an icon in the panel to interact with RustDesk.",
+  "description": "Adds a tray icon to interact with RustDesk.",
   "shell-version": [
     "43"
   ],
