@@ -6,16 +6,16 @@
   height: 20px;
 }
 
-.rustdesk-icon.online {
-  background-image: url("assets/icon-online.png");
+.rustdesk-icon.session-out {
+  background-image: url("assets/icon-session-out.png");
 }
 
-.rustdesk-icon.cm {
-  background: yellow;
+.rustdesk-icon.session-in {
+  background-image: url("assets/icon-session-in.png");
 }
 
-.rustdesk-icon.offline {
-  background-image: url("assets/icon-offline.png");
+.rustdesk-icon.service-offline {
+  background-image: url("assets/icon-service-offline.png");
 }
 
 .menu-button {

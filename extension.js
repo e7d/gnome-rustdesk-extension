@@ -49,12 +49,17 @@ const Indicator = GObject.registerClass(
         || Object.keys(this.rustdesk.sessions).length > 0;
     }
 
+    getIconClasses() {
+      const iconClasses = [];
+      if (Object.values(this.rustdesk.sessions).filter(s => !s.deleted).length > 0) iconClasses.push('session-out');
+      if (this.rustdesk.connectionManager) iconClasses.push('session-in');
+      if (!this.rustdesk.service) iconClasses.push('service-offline');
+      return iconClasses.join(' ');
+    }
+
     updateIcon() {
-      const offline = !this.rustdesk.service;
-      const cm = this.rustdesk.connectionManager;
-      const online = Object.values(this.rustdesk.sessions).filter(s => !s.deleted).length > 0;
       this.destroy_all_children();
-      this.icon = new St.Icon({ style_class: `rustdesk-icon${online ? ' online' : ''}${cm ? ' cm' : ''}${offline ? ' offline' : ''}` });
+      this.icon = new St.Icon({ style_class: `rustdesk-icon ${this.getIconClasses()}` });
       this.add_child(this.icon);
     }
 

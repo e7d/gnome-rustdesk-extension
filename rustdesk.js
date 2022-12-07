@@ -95,8 +95,8 @@ var RustDesk = class RustDesk {
     return processes;
   }
 
-  parseProcesses(name) {
-    const stdout = Process.execCommand(`ps -fC ${name}`).trim();
+  parseProcesses() {
+    const stdout = Process.execCommand('ps -fC rustdesk').trim();
     return stdout.split('\n').reduce((processes, line) => {
       processes = this.parseServiceProcessLine(processes, line);
       processes = this.parseMainProcessLine(processes, line);
@@ -143,33 +143,35 @@ var RustDesk = class RustDesk {
     GLib.spawn_command_line_async(`xdotool windowactivate ${windowID}`);
   }
 
-  resolveSession(existingSession, session) {
-    delete session.deleted;
-    return ['connect', 'fileTransfer', 'portForward'].reduce((session, window) => {
-      if (existingSession[window].windowID !== session[window].windowID) session.changed = true;
-      return session;
-    }, session);
+  cloneDeep(object) {
+    return JSON.parse(JSON.stringify(object));
   }
 
-  update() {
-    const rustdesk = this.parseProcesses('rustdesk');
+  hasServiceChanged(service) {
+    const previous = this.cloneDeep(this.service);
+    return (!previous && !!service)
+      || (!!previous && !service)
+      || (!!previous && !!service && (previous.PID !== service.PID));
+  }
 
-    const previousService = JSON.parse(JSON.stringify(this.service));
-    const serviceStarted = !previousService && rustdesk.service;
-    const serviceStopped = previousService && !rustdesk.service;
-    this.service = rustdesk.service;
+  hasMainChanged(main) {
+    const previous = this.cloneDeep(this.main);
+    return (!previous && !!main)
+      || (!!previous && !main)
+      || (!!previous && !!main) && previous.PID !== main.PID
+      || (!!previous && !!main) && previous.windowID !== main.windowID;
+  }
 
-    const previousMain = JSON.parse(JSON.stringify(this.main));
-    const mainStarted = !previousMain && rustdesk.main;
-    const mainClosed = previousMain && !rustdesk.main;
-    this.main = rustdesk.main;
+  hasConnectionManagerChanged(connectionManager) {
+    const previous = this.cloneDeep(this.connectionManager);
+    return (!previous && !!connectionManager)
+      || (!!previous && !connectionManager)
+      || (!!previous && !!connectionManager && previous.PID !== connectionManager.PID)
+      || (!!previous && !!connectionManager && previous.windowID !== connectionManager.windowID);
+  }
 
-    const previousConnectionManager = JSON.parse(JSON.stringify(this.connectionManager));
-    const connectionManagerStarted = !previousConnectionManager && rustdesk.connectionManager;
-    const connectionManagerClosed = previousConnectionManager && !rustdesk.connectionManager;
-    this.connectionManager = rustdesk.connectionManager;
-
-    const previousSessions = JSON.parse(JSON.stringify(this.sessions));
+  toCurrentSessions(sessions) {
+    const previousSessions = this.cloneDeep(this.sessions);
     Object.keys(previousSessions).forEach(sessionID => {
       const previousSession = previousSessions[sessionID];
       delete previousSessions[sessionID].added;
@@ -180,7 +182,7 @@ var RustDesk = class RustDesk {
       }
       previousSessions[sessionID].deleted = true;
     });
-    const sessions = Object.values(rustdesk.sessions).reduce((sessions, session) => {
+    const currentSessions = Object.values(sessions).reduce((sessions, session) => {
       const existingSession = sessions[session.sessionID];
       if (existingSession) {
         sessions[session.sessionID] = this.resolveSession(existingSession, session);
@@ -189,14 +191,33 @@ var RustDesk = class RustDesk {
       sessions[session.sessionID] = { ...session, added: true };
       return sessions;
     }, previousSessions);
-    this.sessions = sessions;
+    const sessionsChanged = Object.values(currentSessions)
+      .filter(s => s.added || s.deleted || s.changed).length > 0;
+    return { currentSessions, sessionsChanged };
+  }
 
-    this.pendingChanges = serviceStarted
-      || serviceStopped
-      || mainStarted
-      || mainClosed
-      || connectionManagerStarted
-      || connectionManagerClosed
-      || Object.values(sessions).filter(s => s.added || s.deleted || s.changed).length > 0;
+  resolveSession(existingSession, session) {
+    delete session.deleted;
+    return ['connect', 'fileTransfer', 'portForward'].reduce((session, window) => {
+      if (existingSession[window].windowID !== session[window].windowID) session.changed = true;
+      return session;
+    }, session);
+  }
+
+  update() {
+    const { service, main, connectionManager, sessions } = this.parseProcesses();
+    const serviceChanged = this.hasServiceChanged(service)
+    const mainChanged = this.hasMainChanged(main)
+    const connectionManagerChanged = this.hasConnectionManagerChanged(connectionManager)
+    const { currentSessions, sessionsChanged } = this.toCurrentSessions(sessions)
+
+    Object.assign(this, {
+      service,
+      main,
+      connectionManager,
+      sessions: currentSessions
+    });
+
+    this.pendingChanges = serviceChanged || mainChanged || connectionManagerChanged || sessionsChanged;
   }
 }
