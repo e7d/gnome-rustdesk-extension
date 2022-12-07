@@ -33,7 +33,7 @@ var XDO = class XDO {
   }
 
   static getWindowState(windowID) {
-    const stdout = Process.execCommand(`xprop -id ${windowID}`);
+    const stdout = Process.execCommand(`xprop WM_STATE -id ${windowID}`);
     return stdout.split('\n').reduce((windowState, line) => {
       const matches = WINDOW_STATE_REGEXP.exec(line);
       return (matches && matches.groups.state.trim()) || windowState;

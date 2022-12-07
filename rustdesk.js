@@ -40,7 +40,6 @@ var RustDesk = class RustDesk {
     this.main = null;
     this.connectionManager = null;
     this.sessions = {};
-
     this.pendingChanges = false;
   }
 

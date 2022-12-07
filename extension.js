@@ -75,6 +75,15 @@ const Indicator = GObject.registerClass(
       menu.addMenuItem(mainItem);
     }
 
+    addConnectionManagerItem(menu) {
+      const { connectionManager } = this.rustdesk;
+      if (!connectionManager) return;
+      menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+      const connectionManagerItem = new PopupMenu.PopupMenuItem(gettext('Connection Manager'));
+      connectionManagerItem.connect('activate', () => connectionManager ? this.rustdesk.activateWindow(connectionManager.windowID) : this.rustdesk.startApp());
+      menu.addMenuItem(connectionManagerItem);
+    }
+
     addSessionActionItem(subMenu, sessionType, sessionLabel, sessionID, window) {
       const item = new PopupMenu.PopupMenuItem(sessionLabel);
       const { PID, windowID } = window;
@@ -143,6 +152,7 @@ const Indicator = GObject.registerClass(
 
       this.menu.removeAll();
       this.addMainItem(this.menu);
+      this.addConnectionManagerItem(this.menu);
       this.addSessionsItems(this.menu, sessions);
       this.addServiceItem(this.menu);
       this.addQuitItem(this.menu, sessions);
