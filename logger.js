@@ -1,4 +1,4 @@
-/* process.js
+/* logger.js
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,30 +18,19 @@
 
 'use strict';
 
-const ByteArray = imports.byteArray;
-const { GLib } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
-
 const Me = ExtensionUtils.getCurrentExtension();
 
-const { Logger } = Me.imports.logger;
+var Logger = class Logger {
+  static toLogMessage(message) {
+    return `[${Me.metadata.name}] ${new Date().toJSON()} ${message}`;
+  }
 
-var Process = class Process {
-  static execCommand(cmd) {
-    try {
-      let [, stdout, stderr, status] = GLib.spawn_command_line_sync(cmd);
-      if (status !== 0) {
-        const err = stderr instanceof Uint8Array
-          ? ByteArray.toString(stderr)
-          : stderr;
-        throw new Error(`Cmd failed: ${cmd}\nError detail: ${err}`);
-      }
-      return stdout instanceof Uint8Array
-        ? ByteArray.toString(stdout)
-        : stdout;
-    } catch (e) {
-      Logger.error(e);
-      return '';
-    }
+  static log(message) {
+    log(this.toLogMessage(message));
+  }
+
+  static error(message) {
+    logError(new Error(this.toLogMessage(message)));
   }
 }

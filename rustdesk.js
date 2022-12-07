@@ -23,6 +23,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 
 const Me = ExtensionUtils.getCurrentExtension();
 
+const { Logger } = Me.imports.logger;
 const { Process } = Me.imports.process;
 const { XDO } = Me.imports.xdo;
 
@@ -109,37 +110,37 @@ var RustDesk = class RustDesk {
   }
 
   startApp() {
-    log(`Starting RustDesk application`);
+    Logger.log(`Starting RustDesk application`);
     GLib.spawn_command_line_async('rustdesk');
   }
 
   exitApp(PID) {
-    log(`Quitting RustDesk application`);
+    Logger.log(`Quitting RustDesk application`);
     GLib.spawn_command_line_async(`kill -SIGQUIT ${PID}`);
   }
 
   startService() {
-    log(`Starting RustDesk service`);
+    Logger.log(`Starting RustDesk service`);
     GLib.spawn_command_line_async('systemctl start rustdesk');
   }
 
   stopService() {
-    log(`Stopping RustDesk service`);
+    Logger.log(`Stopping RustDesk service`);
     GLib.spawn_command_line_async('systemctl stop rustdesk');
   }
 
   restartService() {
-    log(`Restarting RustDesk service`);
+    Logger.log(`Restarting RustDesk service`);
     GLib.spawn_command_line_async('systemctl restart rustdesk');
   }
 
   startSession(action, sessionID) {
-    log(`Starting "${action}" RustDesk service to ${sessionID}`);
+    Logger.log(`Starting "${action}" RustDesk service to ${sessionID}`);
     GLib.spawn_command_line_async(`rustdesk --${action} ${sessionID}`);
   }
 
   activateWindow(windowID) {
-    log(`Activating window ${windowID}`);
+    Logger.log(`Activating window ${windowID}`);
     GLib.spawn_command_line_async(`xdotool windowactivate ${windowID}`);
   }
 

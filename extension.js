@@ -20,16 +20,17 @@
 
 const ByteArray = imports.byteArray;
 const { Clutter, Gio, GLib, GObject, St } = imports.gi;
-const Main = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
+const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
 const Me = ExtensionUtils.getCurrentExtension();
 const { gettext } = ExtensionUtils;
 
-const { Settings } = Me.imports.settings;
+const { Logger } = Me.imports.logger;
 const { RustDesk } = Me.imports.rustdesk;
+const { Settings } = Me.imports.settings;
 
 const GETTEXT_DOMAIN = 'gnome-rustdesk-extension@e7d.io';
 
@@ -39,7 +40,7 @@ const Indicator = GObject.registerClass(
       super._init(0.0, gettext('RustDesk'));
       this.settings = settings;
       this.rustdesk = rustdesk;
-      this.update();
+      this.update(true);
     }
 
     updateVisible() {
@@ -67,80 +68,88 @@ const Indicator = GObject.registerClass(
       return sessionID.split('').reverse().map((n, i) => `${(i + 1) % 3 === 0 ? ' ' : ''}${n}`).reverse().join('').trim();
     }
 
-    updateMenu() {
-      const { service, main } = this.rustdesk;
-      const sessions = Object.values(this.rustdesk.sessions).filter(s => !s.deleted);
-
-      const { service: serviceSetting, sessions: sessionsSetting } = this.settings;
-
-      this.menu.removeAll();
-
+    addMainItem(menu) {
+      const { main } = this.rustdesk;
       const mainItem = new PopupMenu.PopupMenuItem(gettext('RustDesk'));
       mainItem.connect('activate', () => main ? this.rustdesk.activateWindow(main.windowID) : this.rustdesk.startApp());
-      this.menu.addMenuItem(mainItem);
-
-      if (sessionsSetting && sessions.length > 0) {
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        sessions.forEach(({ sessionID, connect, fileTransfer, portForward }) => {
-          const sessionSubMenu = new PopupMenu.PopupSubMenuMenuItem(this.toSessionLabel(sessionID));
-          const connectSessionItem = new PopupMenu.PopupMenuItem(gettext('Connect'));
-          if (connect.PID) {
-            const connectCloseButton = new St.Button({
-              style_class: 'menu-button window-close',
-              icon_name: 'window-close-symbolic',
-              x_align: Clutter.ActorAlign.END
-            });
-            connectCloseButton.connect('clicked', () => this.rustdesk.exitApp(connect.PID));
-            connectSessionItem.add_child(connectCloseButton);
-          }
-          connectSessionItem.connect('activate', () => connect.windowID ? this.rustdesk.activateWindow(connect.windowID) : this.rustdesk.startSession('connect', sessionID));
-          sessionSubMenu.menu.addMenuItem(connectSessionItem);
-          const fileTransferSessionItem = new PopupMenu.PopupMenuItem(gettext('Transfer File'));
-          fileTransferSessionItem.connect('activate', () => fileTransfer.windowID ? this.rustdesk.activateWindow(fileTransfer.windowID) : this.rustdesk.startSession('file-transfer', sessionID));
-          sessionSubMenu.menu.addMenuItem(fileTransferSessionItem);
-          const portForwardSessionItem = new PopupMenu.PopupMenuItem(gettext('TCP Tunneling'));
-          portForwardSessionItem.connect('activate', () => portForward.windowID ? this.rustdesk.activateWindow(portForward.windowID) : this.rustdesk.startSession('port-forward', sessionID));
-          sessionSubMenu.menu.addMenuItem(portForwardSessionItem);
-          sessionSubMenu.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-          const closeSessionItem = new PopupMenu.PopupMenuItem(gettext('Close session'));
-          closeSessionItem.connect('activate', () => [connect, fileTransfer, portForward].forEach(({ PID }) => PID && this.rustdesk.exitApp(PID)));
-          sessionSubMenu.menu.addMenuItem(closeSessionItem);
-          this.menu.addMenuItem(sessionSubMenu);
-        });
-        if (sessions.length > 1) {
-          const closeAll = new PopupMenu.PopupMenuItem(gettext('Close all sessions'));
-          closeAll.connect('activate', () => sessions.forEach(({ connect: { PID } }) => this.rustdesk.exitApp(PID)));
-          this.menu.addMenuItem(closeAll);
-        }
-      }
-
-      if (serviceSetting) {
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-        const serviceItem = new PopupMenu.PopupMenuItem(service ? gettext('Stop service') : gettext('Start service'));
-        serviceItem.connect('activate', () => service ? this.rustdesk.stopService() : this.rustdesk.startService());
-        this.menu.addMenuItem(serviceItem);
-
-        if (service) {
-          const restartServiceItem = new PopupMenu.PopupMenuItem(gettext('Restart service'));
-          restartServiceItem.connect('activate', () => this.rustdesk.restartService());
-          this.menu.addMenuItem(restartServiceItem);
-        }
-      }
-
-      if (main || sessions.length > 0) {
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        const exitItem = new PopupMenu.PopupMenuItem(gettext('Exit'));
-        exitItem.connect('activate', () => {
-          if (main) this.rustdesk.exitApp(main.PID);
-          sessions.forEach(({ PID }) => this.rustdesk.exitApp(PID));
-        });
-        this.menu.addMenuItem(exitItem);
-      }
+      menu.addMenuItem(mainItem);
     }
 
-    update() {
-      if (!this.settings.pendingChanges && !this.rustdesk.pendingChanges) return;
+    addSessionActionItem(subMenu, sessionType, sessionLabel, sessionID, window) {
+      const item = new PopupMenu.PopupMenuItem(sessionLabel);
+      const { PID, windowID } = window;
+      if (PID) {
+        const closeButton = new St.Button({
+          style_class: 'menu-button window-close',
+          icon_name: 'window-close-symbolic',
+          x_align: Clutter.ActorAlign.END
+        });
+        closeButton.connect('clicked', () => this.rustdesk.exitApp(PID));
+        item.add_child(closeButton);
+      }
+      item.connect('activate', () => windowID ? this.rustdesk.activateWindow(windowID) : this.rustdesk.startSession(sessionType, sessionID));
+      subMenu.menu.addMenuItem(item);
+    }
+
+    addSessionsItems(menu, sessions) {
+      const { sessions: sessionsSetting } = this.settings;
+      if (!sessionsSetting || sessions.length === 0) return;
+      menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+      sessions.forEach(({ sessionID, connect, fileTransfer, portForward }) => {
+        const sessionItem = new PopupMenu.PopupSubMenuMenuItem(this.toSessionLabel(sessionID));
+        this.addSessionActionItem(sessionItem, 'connect', gettext('Connect'), sessionID, connect);
+        this.addSessionActionItem(sessionItem, 'file-transfer', gettext('Transfer File'), sessionID, fileTransfer);
+        this.addSessionActionItem(sessionItem, 'port-forward', gettext('TCP Tunneling'), sessionID, portForward);
+        sessionItem.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        const sessionCloseItem = new PopupMenu.PopupMenuItem(gettext('Close session'));
+        sessionCloseItem.connect('activate', () => [connect, fileTransfer, portForward].forEach(({ PID }) => PID && this.rustdesk.exitApp(PID)));
+        sessionItem.menu.addMenuItem(sessionCloseItem);
+        menu.addMenuItem(sessionItem);
+      });
+      if (sessions.length < 2) return;
+      const closeAllItem = new PopupMenu.PopupMenuItem(gettext('Close all sessions'));
+      closeAllItem.connect('activate', () => sessions.forEach(({ connect: { PID } }) => this.rustdesk.exitApp(PID)));
+      menu.addMenuItem(closeAllItem);
+    }
+
+    addServiceItem(menu) {
+      const { service } = this.rustdesk;
+      const { service: serviceSetting } = this.settings;
+      if (!serviceSetting) return;
+      menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+      const startStopItem = new PopupMenu.PopupMenuItem(service ? gettext('Stop service') : gettext('Start service'));
+      startStopItem.connect('activate', () => service ? this.rustdesk.stopService() : this.rustdesk.startService());
+      menu.addMenuItem(startStopItem);
+      if (!service) return;
+      const restartItem = new PopupMenu.PopupMenuItem(gettext('Restart service'));
+      restartItem.connect('activate', () => this.rustdesk.restartService());
+      menu.addMenuItem(restartItem);
+    }
+
+    addQuitItem(menu, sessions) {
+      const { main } = this.rustdesk;
+      if (!main && sessions.length === 0) return;
+      menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+      const quitItem = new PopupMenu.PopupMenuItem(gettext('Quit'));
+      quitItem.connect('activate', () => {
+        if (main) this.rustdesk.exitApp(main.PID);
+        sessions.forEach(({ PID }) => this.rustdesk.exitApp(PID));
+      });
+      menu.addMenuItem(quitItem);
+    }
+
+    updateMenu() {
+      const sessions = Object.values(this.rustdesk.sessions).filter(s => !s.deleted);
+
+      this.menu.removeAll();
+      this.addMainItem(this.menu);
+      this.addSessionsItems(this.menu, sessions);
+      this.addServiceItem(this.menu);
+      this.addQuitItem(this.menu, sessions);
+    }
+
+    update(force) {
+      if (!force && !this.settings.pendingChanges && !this.rustdesk.pendingChanges) return;
       this.updateVisible();
       this.updateIcon();
       this.updateMenu();
@@ -159,14 +168,14 @@ class Extension {
   }
 
   enable() {
-    log(`enabling ${Me.metadata.name}`);
+    Logger.log(`enabling`);
     this.indicator = new Indicator(this.settings, this.rustdesk);
     Main.panel.addToStatusArea(this.uuid, this.indicator);
     this.refreshInterval = setInterval(this.refresh.bind(this), 1000);
   }
 
   disable() {
-    log(`disabling ${Me.metadata.name}`);
+    Logger.log(`disabling`);
     clearInterval(this.refreshInterval);
     this.indicator.destroy();
     this.indicator = null;
