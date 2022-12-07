@@ -29,6 +29,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { gettext } = ExtensionUtils;
 
 const { Logger } = Me.imports.logger;
+const { Process } = Me.imports.process;
 const { RustDesk } = Me.imports.rustdesk;
 const { Settings } = Me.imports.settings;
 
@@ -177,7 +178,21 @@ class Extension {
     this.rustdesk = new RustDesk();
   }
 
+  hasBinary(binary) {
+    const stdout = Process.execCommand(`whereis ${binary}`);
+    Logger.log(stdout);
+    return true;
+  }
+
+  checkRequirements() {
+    return this.hasBinary('xdotool') && this.hasBinary('xprop');
+  }
+
   enable() {
+    // if (!this.checkRequirements()) {
+    //   Logger.log(`Requirments are not met: please install "xdotool" and "xprop"`);
+    //   return;
+    // }
     Logger.log(`enabling`);
     this.indicator = new Indicator(this.settings, this.rustdesk);
     Main.panel.addToStatusArea(this.uuid, this.indicator);
