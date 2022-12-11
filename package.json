@@ -4,12 +4,13 @@
   "description": "Adds a tray icon to interact with RustDesk.",
   "main": "extension.js",
   "scripts": {
-    "build": "npm run translate && npm run pack",
-    "pack": "gnome-extensions pack -f -o build/ --extra-source=assets --extra-source=lib --podir=po .",
+    "build": "npm run schemas && npm run translate && npm run pack",
+    "pack": "gnome-extensions pack -f -o build/ --extra-source=assets --extra-source=lib --podir=locale/po .",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "schemas": "glib-compile-schemas schemas/",
     "translate": "npm run translate:extract && npm run translate:join && npm run translate:clean",
     "translate:clean": "rm locale/po/tmp.pot",
-    "translate:extract": "xgettext --omit-header --from-code=UTF-8 --output=locale/po/tmp.pot *.js",
+    "translate:extract": "find . -iname '*.js' | xargs xgettext --omit-header --from-code=UTF-8 --output=locale/po/tmp.pot",
     "translate:join": "cat locale/po/resources/header.pot >locale/po/translation.pot && cat locale/po/tmp.pot >>locale/po/translation.pot"
   },
   "repository": {

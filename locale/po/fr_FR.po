@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gnome-rustdesk-extension@e7d.io 1.0.0\n"
 "Report-Msgid-Bugs-To: gnome-rustdesk-extension@e7d.io\n"
 "POT-Creation-Date: 2022-12-11 11:43+0100\n"
-"PO-Revision-Date: 2022-12-11 12:04+0100\n"
+"PO-Revision-Date: 2022-12-11 16:02+0100\n"
 "Last-Translator: Michael \"e7d\" Ferrand <michael@e7d.io>\n"
 "Language-Team: gnome-rustdesk-extension <gnome-rustdesk-extension@e7d.io>\n"
 "Language: fr_FR\n"
@@ -29,50 +29,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.1.1\n"
-
-#: extension.js:43 extension.js:76
-msgid "RustDesk"
-msgstr "RustDesk"
-
-#: extension.js:85
-msgid "Connection Manager"
-msgstr "Gestionnaire de connexions"
-
-#: extension.js:112
-msgid "Connect"
-msgstr "Connexion"
-
-#: extension.js:113
-msgid "Transfer File"
-msgstr "Transfert de fichiers"
-
-#: extension.js:114
-msgid "TCP Tunneling"
-msgstr "Tunnel TCP"
-
-#: extension.js:116
-msgid "Close session"
-msgstr "Fermer la session"
-
-#: extension.js:122
-msgid "Close all sessions"
-msgstr "Fermer toutes les sessions"
-
-#: extension.js:132
-msgid "Stop service"
-msgstr "Arrêter le service"
-
-#: extension.js:132
-msgid "Start service"
-msgstr "Démarrer le service"
-
-#: extension.js:136
-msgid "Restart service"
-msgstr "Redémarrer le service"
-
-#: extension.js:145
-msgid "Quit"
-msgstr "Quitter"
 
 #: prefs.js:35
 msgid "Setup the required dependencies for the extension to work properly!"
@@ -96,21 +52,75 @@ msgid "When RustDesk is running"
 msgstr "Quand RustDesk est lancé"
 
 #: prefs.js:80
+msgid "Connection manager"
+msgstr "Gestionnaire de connexions"
+
+#: prefs.js:81
+msgid "Display an entry to access the control manager window when opened."
+msgstr ""
+"Afficher une entrée permettant d'accéder au gestionnaire de connexions, "
+"quand il est ouvert."
+
+#: prefs.js:102
 msgid "Manage sessions"
 msgstr "Gestion des sessions"
 
-#: prefs.js:81
+#: prefs.js:103
 msgid "Display an entry to manage each currently opened session."
 msgstr ""
 "Afficher une entrée permettant de gérer individuellement chaque session "
 "ouverte."
 
-#: prefs.js:102
+#: prefs.js:124
 msgid "Manage service"
 msgstr "Gestion du service"
 
-#: prefs.js:103
+#: prefs.js:125
 msgid "Display additional entries to start and stop the RustDesk service."
 msgstr ""
 "Afficher des entrées additionnelles permettant de démarrer et d'arrêter le "
 "service RustDesk."
+
+#: lib/indicator.js:37 lib/indicator.js:70
+msgid "RustDesk"
+msgstr "RustDesk"
+
+#: lib/indicator.js:81
+msgid "Connection Manager"
+msgstr "Gestionnaire de connexions"
+
+#: lib/indicator.js:108
+msgid "Connect"
+msgstr "Connexion"
+
+#: lib/indicator.js:109
+msgid "Transfer File"
+msgstr "Transfert de fichiers"
+
+#: lib/indicator.js:110
+msgid "TCP Tunneling"
+msgstr "Tunnel TCP"
+
+#: lib/indicator.js:112
+msgid "Close session"
+msgstr "Fermer la session"
+
+#: lib/indicator.js:118
+msgid "Close all sessions"
+msgstr "Fermer toutes les sessions"
+
+#: lib/indicator.js:128
+msgid "Stop service"
+msgstr "Arrêter le service"
+
+#: lib/indicator.js:128
+msgid "Start service"
+msgstr "Démarrer le service"
+
+#: lib/indicator.js:132
+msgid "Restart service"
+msgstr "Redémarrer le service"
+
+#: lib/indicator.js:141
+msgid "Quit"
+msgstr "Quitter"

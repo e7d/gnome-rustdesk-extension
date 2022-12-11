@@ -29,50 +29,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: extension.js:43 extension.js:76
-msgid "RustDesk"
-msgstr ""
-
-#: extension.js:85
-msgid "Connection Manager"
-msgstr ""
-
-#: extension.js:112
-msgid "Connect"
-msgstr ""
-
-#: extension.js:113
-msgid "Transfer File"
-msgstr ""
-
-#: extension.js:114
-msgid "TCP Tunneling"
-msgstr ""
-
-#: extension.js:116
-msgid "Close session"
-msgstr ""
-
-#: extension.js:122
-msgid "Close all sessions"
-msgstr ""
-
-#: extension.js:132
-msgid "Stop service"
-msgstr ""
-
-#: extension.js:132
-msgid "Start service"
-msgstr ""
-
-#: extension.js:136
-msgid "Restart service"
-msgstr ""
-
-#: extension.js:145
-msgid "Quit"
-msgstr ""
-
 #: prefs.js:35
 msgid "Setup the required dependencies for the extension to work properly!"
 msgstr ""
@@ -94,17 +50,69 @@ msgid "When RustDesk is running"
 msgstr ""
 
 #: prefs.js:80
-msgid "Manage sessions"
+msgid "Connection manager"
 msgstr ""
 
 #: prefs.js:81
-msgid "Display an entry to manage each currently opened session."
+msgid "Display an entry to access the control manager window when opened."
 msgstr ""
 
 #: prefs.js:102
-msgid "Manage service"
+msgid "Manage sessions"
 msgstr ""
 
 #: prefs.js:103
+msgid "Display an entry to manage each currently opened session."
+msgstr ""
+
+#: prefs.js:124
+msgid "Manage service"
+msgstr ""
+
+#: prefs.js:125
 msgid "Display additional entries to start and stop the RustDesk service."
+msgstr ""
+
+#: lib/indicator.js:37 lib/indicator.js:70
+msgid "RustDesk"
+msgstr ""
+
+#: lib/indicator.js:81
+msgid "Connection Manager"
+msgstr ""
+
+#: lib/indicator.js:108
+msgid "Connect"
+msgstr ""
+
+#: lib/indicator.js:109
+msgid "Transfer File"
+msgstr ""
+
+#: lib/indicator.js:110
+msgid "TCP Tunneling"
+msgstr ""
+
+#: lib/indicator.js:112
+msgid "Close session"
+msgstr ""
+
+#: lib/indicator.js:118
+msgid "Close all sessions"
+msgstr ""
+
+#: lib/indicator.js:128
+msgid "Stop service"
+msgstr ""
+
+#: lib/indicator.js:128
+msgid "Start service"
+msgstr ""
+
+#: lib/indicator.js:132
+msgid "Restart service"
+msgstr ""
+
+#: lib/indicator.js:141
+msgid "Quit"
 msgstr ""

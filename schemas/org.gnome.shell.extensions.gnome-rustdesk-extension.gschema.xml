@@ -5,6 +5,9 @@
     <key name="show-icon" type="i">
       <default>1</default>
     </key>
+    <key name="connection-manager" type="b">
+      <default>false</default>
+    </key>
     <key name="sessions" type="b">
       <default>true</default>
     </key>

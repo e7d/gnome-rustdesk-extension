@@ -75,6 +75,28 @@ function addShowIconComboBox(settings, group) {
   row.add_suffix(cbox);
 }
 
+function addConnectionManagerSwitch(settings, group) {
+  const row = new Adw.ActionRow({
+    title: _('Connection manager'),
+    subtitle: _('Display an entry to access the control manager window when opened.')
+  });
+  group.add(row);
+
+  const toggle = new Gtk.Switch({
+    active: settings.get_boolean('connection-manager'),
+    valign: Gtk.Align.CENTER,
+  });
+  settings.bind(
+    'connection-manager',
+    toggle,
+    'active',
+    Gio.SettingsBindFlags.DEFAULT
+  );
+
+  row.add_suffix(toggle);
+  row.activatable_widget = toggle;
+}
+
 function addSessionsSwitch(settings, group) {
   const row = new Adw.ActionRow({
     title: _('Manage sessions'),
@@ -128,6 +150,7 @@ function fillPreferencesWindow(window) {
 
   // addSetupButton(group);
   addShowIconComboBox(settings, group);
+  addConnectionManagerSwitch(settings, group);
   addSessionsSwitch(settings, group);
   addServiceSwitch(settings, group);
 
