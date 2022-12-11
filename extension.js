@@ -39,9 +39,7 @@ class Extension {
   }
 
   hasBinary(binary) {
-    const stdout = Process.execCommand(`whereis ${binary}`);
-    Logger.log(stdout);
-    return true;
+    return !!Process.execCommand(`command -v ${binary}`);
   }
 
   checkRequirements() {
@@ -56,17 +54,17 @@ class Extension {
     Logger.log('enabling');
     this.indicator = new Indicator(this.settings, this.rustdesk);
     Main.panel.addToStatusArea(this.uuid, this.indicator);
-    this.refreshInterval = setInterval(this.refresh.bind(this), 1000);
+    this.updateInterval = setInterval(this.update.bind(this), 1000);
   }
 
   disable() {
     Logger.log('disabling');
-    clearInterval(this.refreshInterval);
+    clearInterval(this.updateInterval);
     this.indicator.destroy();
     this.indicator = null;
   }
 
-  refresh() {
+  update() {
     this.settings.update();
     this.rustdesk.update();
     this.indicator.update();
