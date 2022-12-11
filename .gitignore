@@ -1,0 +1,4 @@
+!**/.gitkeep
+
+build/*
+locale/po/*.mo

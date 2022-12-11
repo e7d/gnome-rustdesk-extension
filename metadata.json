@@ -6,6 +6,6 @@
     "43"
   ],
   "url": "https://github.com/e7d/gnome-rustdesk-extension",
-  "version": 0.1,
+  "version": 1,
   "settings-schema": "org.gnome.shell.extensions.gnome-rustdesk-extension"
 }

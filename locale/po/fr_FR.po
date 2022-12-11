@@ -1,0 +1,116 @@
+# translation.pot
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-rustdesk-extension@e7d.io 1.0.0\n"
+"Report-Msgid-Bugs-To: gnome-rustdesk-extension@e7d.io\n"
+"POT-Creation-Date: 2022-12-11 11:43+0100\n"
+"PO-Revision-Date: 2022-12-11 12:04+0100\n"
+"Last-Translator: Michael \"e7d\" Ferrand <michael@e7d.io>\n"
+"Language-Team: gnome-rustdesk-extension <gnome-rustdesk-extension@e7d.io>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.1.1\n"
+
+#: extension.js:43 extension.js:76
+msgid "RustDesk"
+msgstr "RustDesk"
+
+#: extension.js:85
+msgid "Connection Manager"
+msgstr "Gestionnaire de connexions"
+
+#: extension.js:112
+msgid "Connect"
+msgstr "Connexion"
+
+#: extension.js:113
+msgid "Transfer File"
+msgstr "Transfert de fichiers"
+
+#: extension.js:114
+msgid "TCP Tunneling"
+msgstr "Tunnel TCP"
+
+#: extension.js:116
+msgid "Close session"
+msgstr "Fermer la session"
+
+#: extension.js:122
+msgid "Close all sessions"
+msgstr "Fermer toutes les sessions"
+
+#: extension.js:132
+msgid "Stop service"
+msgstr "Arrêter le service"
+
+#: extension.js:132
+msgid "Start service"
+msgstr "Démarrer le service"
+
+#: extension.js:136
+msgid "Restart service"
+msgstr "Redémarrer le service"
+
+#: extension.js:145
+msgid "Quit"
+msgstr "Quitter"
+
+#: prefs.js:35
+msgid "Setup the required dependencies for the extension to work properly!"
+msgstr ""
+"Installer les dépendances nécessaires au bon fonctionnement de l'extension !"
+
+#: prefs.js:39
+msgid "Setup"
+msgstr "Initialisation"
+
+#: prefs.js:50
+msgid "Display icon"
+msgstr "Afficher l'icône"
+
+#: prefs.js:65
+msgid "Always"
+msgstr "En permanence"
+
+#: prefs.js:66
+msgid "When RustDesk is running"
+msgstr "Quand RustDesk est lancé"
+
+#: prefs.js:80
+msgid "Manage sessions"
+msgstr "Gestion des sessions"
+
+#: prefs.js:81
+msgid "Display an entry to manage each currently opened session."
+msgstr ""
+"Afficher une entrée permettant de gérer individuellement chaque session "
+"ouverte."
+
+#: prefs.js:102
+msgid "Manage service"
+msgstr "Gestion du service"
+
+#: prefs.js:103
+msgid "Display additional entries to start and stop the RustDesk service."
+msgstr ""
+"Afficher des entrées additionnelles permettant de démarrer et d'arrêter le "
+"service RustDesk."

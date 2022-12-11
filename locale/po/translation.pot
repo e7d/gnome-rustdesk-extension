@@ -1,0 +1,110 @@
+# translation.pot
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-rustdesk-extension@e7d.io 1.0.0\n"
+"Report-Msgid-Bugs-To: gnome-rustdesk-extension@e7d.io\n"
+"POT-Creation-Date: 2022-12-11 11:43+0100\n"
+"PO-Revision-Date: 2022-12-11 11:05+0100\n"
+"Last-Translator: Michael \"e7d\" Ferrand <michael@e7d.io>\n"
+"Language-Team: gnome-rustdesk-extension <gnome-rustdesk-extension@e7d.io>\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: extension.js:43 extension.js:76
+msgid "RustDesk"
+msgstr ""
+
+#: extension.js:85
+msgid "Connection Manager"
+msgstr ""
+
+#: extension.js:112
+msgid "Connect"
+msgstr ""
+
+#: extension.js:113
+msgid "Transfer File"
+msgstr ""
+
+#: extension.js:114
+msgid "TCP Tunneling"
+msgstr ""
+
+#: extension.js:116
+msgid "Close session"
+msgstr ""
+
+#: extension.js:122
+msgid "Close all sessions"
+msgstr ""
+
+#: extension.js:132
+msgid "Stop service"
+msgstr ""
+
+#: extension.js:132
+msgid "Start service"
+msgstr ""
+
+#: extension.js:136
+msgid "Restart service"
+msgstr ""
+
+#: extension.js:145
+msgid "Quit"
+msgstr ""
+
+#: prefs.js:35
+msgid "Setup the required dependencies for the extension to work properly!"
+msgstr ""
+
+#: prefs.js:39
+msgid "Setup"
+msgstr ""
+
+#: prefs.js:50
+msgid "Display icon"
+msgstr ""
+
+#: prefs.js:65
+msgid "Always"
+msgstr ""
+
+#: prefs.js:66
+msgid "When RustDesk is running"
+msgstr ""
+
+#: prefs.js:80
+msgid "Manage sessions"
+msgstr ""
+
+#: prefs.js:81
+msgid "Display an entry to manage each currently opened session."
+msgstr ""
+
+#: prefs.js:102
+msgid "Manage service"
+msgstr ""
+
+#: prefs.js:103
+msgid "Display additional entries to start and stop the RustDesk service."
+msgstr ""

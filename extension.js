@@ -20,25 +20,27 @@
 
 const ByteArray = imports.byteArray;
 const { Clutter, Gio, GLib, GObject, St } = imports.gi;
+const Gettext = imports.gettext;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
 const Me = ExtensionUtils.getCurrentExtension();
-const { gettext } = ExtensionUtils;
 
-const { Logger } = Me.imports.logger;
-const { Process } = Me.imports.process;
-const { RustDesk } = Me.imports.rustdesk;
-const { Settings } = Me.imports.settings;
+const Domain = Gettext.domain(Me.metadata.uuid);
+const _ = Domain.gettext;
+const ngettext = Domain.ngettext;
 
-const GETTEXT_DOMAIN = 'gnome-rustdesk-extension@e7d.io';
+const { Logger } = Me.imports.lib.logger;
+const { Process } = Me.imports.lib.process;
+const { RustDesk } = Me.imports.lib.rustdesk;
+const { Settings } = Me.imports.lib.settings;
 
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
     _init(settings, rustdesk) {
-      super._init(0.0, gettext('RustDesk'));
+      super._init(0.0, _('RustDesk'));
       this.settings = settings;
       this.rustdesk = rustdesk;
       this.update(true);
@@ -71,7 +73,7 @@ const Indicator = GObject.registerClass(
 
     addMainItem(menu) {
       const { main } = this.rustdesk;
-      const mainItem = new PopupMenu.PopupMenuItem(gettext('RustDesk'));
+      const mainItem = new PopupMenu.PopupMenuItem(_('RustDesk'));
       mainItem.connect('activate', () => main ? this.rustdesk.activateWindow(main.windowID) : this.rustdesk.startApp());
       menu.addMenuItem(mainItem);
     }
@@ -80,7 +82,7 @@ const Indicator = GObject.registerClass(
       const { connectionManager } = this.rustdesk;
       if (!connectionManager) return;
       menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-      const connectionManagerItem = new PopupMenu.PopupMenuItem(gettext('Connection Manager'));
+      const connectionManagerItem = new PopupMenu.PopupMenuItem(_('Connection Manager'));
       connectionManagerItem.connect('activate', () => connectionManager ? this.rustdesk.activateWindow(connectionManager.windowID) : this.rustdesk.startApp());
       menu.addMenuItem(connectionManagerItem);
     }
@@ -107,17 +109,17 @@ const Indicator = GObject.registerClass(
       menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
       sessions.forEach(({ sessionID, connect, fileTransfer, portForward }) => {
         const sessionItem = new PopupMenu.PopupSubMenuMenuItem(this.toSessionLabel(sessionID));
-        this.addSessionActionItem(sessionItem, 'connect', gettext('Connect'), sessionID, connect);
-        this.addSessionActionItem(sessionItem, 'file-transfer', gettext('Transfer File'), sessionID, fileTransfer);
-        this.addSessionActionItem(sessionItem, 'port-forward', gettext('TCP Tunneling'), sessionID, portForward);
+        this.addSessionActionItem(sessionItem, 'connect', _('Connect'), sessionID, connect);
+        this.addSessionActionItem(sessionItem, 'file-transfer', _('Transfer File'), sessionID, fileTransfer);
+        this.addSessionActionItem(sessionItem, 'port-forward', _('TCP Tunneling'), sessionID, portForward);
         sessionItem.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        const sessionCloseItem = new PopupMenu.PopupMenuItem(gettext('Close session'));
+        const sessionCloseItem = new PopupMenu.PopupMenuItem(_('Close session'));
         sessionCloseItem.connect('activate', () => [connect, fileTransfer, portForward].forEach(({ PID }) => PID && this.rustdesk.exitApp(PID)));
         sessionItem.menu.addMenuItem(sessionCloseItem);
         menu.addMenuItem(sessionItem);
       });
       if (sessions.length < 2) return;
-      const closeAllItem = new PopupMenu.PopupMenuItem(gettext('Close all sessions'));
+      const closeAllItem = new PopupMenu.PopupMenuItem(_('Close all sessions'));
       closeAllItem.connect('activate', () => sessions.forEach(({ connect: { PID } }) => this.rustdesk.exitApp(PID)));
       menu.addMenuItem(closeAllItem);
     }
@@ -127,11 +129,11 @@ const Indicator = GObject.registerClass(
       const { service: serviceSetting } = this.settings;
       if (!serviceSetting) return;
       menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-      const startStopItem = new PopupMenu.PopupMenuItem(service ? gettext('Stop service') : gettext('Start service'));
+      const startStopItem = new PopupMenu.PopupMenuItem(service ? _('Stop service') : _('Start service'));
       startStopItem.connect('activate', () => service ? this.rustdesk.stopService() : this.rustdesk.startService());
       menu.addMenuItem(startStopItem);
       if (!service) return;
-      const restartItem = new PopupMenu.PopupMenuItem(gettext('Restart service'));
+      const restartItem = new PopupMenu.PopupMenuItem(_('Restart service'));
       restartItem.connect('activate', () => this.rustdesk.restartService());
       menu.addMenuItem(restartItem);
     }
@@ -140,7 +142,7 @@ const Indicator = GObject.registerClass(
       const { main } = this.rustdesk;
       if (!main && sessions.length === 0) return;
       menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-      const quitItem = new PopupMenu.PopupMenuItem(gettext('Quit'));
+      const quitItem = new PopupMenu.PopupMenuItem(_('Quit'));
       quitItem.connect('activate', () => {
         if (main) this.rustdesk.exitApp(main.PID);
         sessions.forEach(({ PID }) => this.rustdesk.exitApp(PID));
@@ -172,8 +174,9 @@ const Indicator = GObject.registerClass(
 
 class Extension {
   constructor(uuid) {
+    ExtensionUtils.initTranslations(Me.metadata.uuid);
+
     this.uuid = uuid;
-    ExtensionUtils.initTranslations(GETTEXT_DOMAIN);
     this.settings = new Settings();
     this.rustdesk = new RustDesk();
   }
@@ -190,17 +193,17 @@ class Extension {
 
   enable() {
     // if (!this.checkRequirements()) {
-    //   Logger.log(`Requirments are not met: please install "xdotool" and "xprop"`);
+    //   Logger.log('Requirments are not met: please install "xdotool" and "xprop"');
     //   return;
     // }
-    Logger.log(`enabling`);
+    Logger.log('enabling');
     this.indicator = new Indicator(this.settings, this.rustdesk);
     Main.panel.addToStatusArea(this.uuid, this.indicator);
     this.refreshInterval = setInterval(this.refresh.bind(this), 1000);
   }
 
   disable() {
-    Logger.log(`disabling`);
+    Logger.log('disabling');
     clearInterval(this.refreshInterval);
     this.indicator.destroy();
     this.indicator = null;

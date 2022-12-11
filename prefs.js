@@ -18,31 +18,36 @@
 
 'use strict';
 
+const Gettext = imports.gettext;
 const { Adw, Gio, GLib, GObject, Gtk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+const Domain = Gettext.domain(Me.metadata.uuid);
+const _ = Domain.gettext;
+
 function init() {
+  ExtensionUtils.initTranslations(Me.metadata.uuid);
 }
 
 function addSetupButton(group) {
-  const row = new Adw.ActionRow({ title: 'Setup the required dependencies for the extension to work properly!' });
+  const row = new Adw.ActionRow({ title: _('Setup the required dependencies for the extension to work properly!') });
   group.add(row);
 
   const button = new Gtk.Button({
-    label: 'Setup',
+    label: _('Setup'),
     valign: Gtk.Align.CENTER,
   });
   button.connect('clicked', () => {
-    GLib.spawn_command_line_async(`dnf install xdotool`);
+    GLib.spawn_command_line_async('dnf install xdotool');
   });
 
   row.add_suffix(button);
 }
 
 function addShowIconComboBox(settings, group) {
-  const row = new Adw.ActionRow({ title: 'Display icon' });
+  const row = new Adw.ActionRow({ title: _('Display icon') });
   group.add(row);
 
   let model = new Gtk.ListStore();
@@ -57,8 +62,8 @@ function addShowIconComboBox(settings, group) {
   cbox.pack_start(renderer, true);
   cbox.add_attribute(renderer, 'text', 1);
 
-  model.set(model.append(), [0, 1], ['always', 'Always']);
-  model.set(model.append(), [0, 1], ['when-running', 'When RustDesk is running']);
+  model.set(model.append(), [0, 1], ['always', _('Always')]);
+  model.set(model.append(), [0, 1], ['when-running', _('When RustDesk is running')]);
 
   settings.bind(
     'show-icon',
@@ -72,8 +77,8 @@ function addShowIconComboBox(settings, group) {
 
 function addSessionsSwitch(settings, group) {
   const row = new Adw.ActionRow({
-    title: 'Manage sessions',
-    subtitle: 'Display an entry to manage each currently opened session.'
+    title: _('Manage sessions'),
+    subtitle: _('Display an entry to manage each currently opened session.')
   });
   group.add(row);
 
@@ -94,9 +99,9 @@ function addSessionsSwitch(settings, group) {
 
 function addServiceSwitch(settings, group) {
   const row = new Adw.ActionRow({
-    title: 'Manage service',
-    subtitle: 'Display additional entries to start and stop the RustDesk service.'
-    });
+    title: _('Manage service'),
+    subtitle: _('Display additional entries to start and stop the RustDesk service.')
+  });
   group.add(row);
 
   const toggle = new Gtk.Switch({
