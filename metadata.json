@@ -3,9 +3,10 @@
   "name": "RustDesk",
   "description": "Adds a tray icon to interact with RustDesk.",
   "shell-version": [
-    "43"
+    "43",
+    "44"
   ],
   "url": "https://github.com/e7d/gnome-rustdesk-extension",
-  "version": 1,
+  "version": 2,
   "settings-schema": "org.gnome.shell.extensions.gnome-rustdesk-extension"
 }
